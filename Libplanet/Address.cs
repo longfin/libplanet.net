@@ -54,7 +54,12 @@ namespace Libplanet
 
         public override string ToString()
         {
-            return $"0x{ByteUtil.Hex(ToByteArray())}";
+            return $"0x{Hex()}";
+        }
+
+        public string Hex()
+        {
+            return ByteUtil.Hex(ToByteArray());
         }
 
         public bool Equals(Address other)

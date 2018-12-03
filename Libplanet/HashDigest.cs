@@ -5,6 +5,7 @@ namespace Libplanet
 {
     public struct HashDigest : IEquatable<HashDigest>
     {
+        public const int HashSize = 32;
         private readonly byte[] _hashDigest;
 
         public HashDigest(byte[] hashDigest)

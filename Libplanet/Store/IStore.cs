@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Libplanet.Action;
 using Libplanet.Blocks;
 using Libplanet.Tx;
@@ -50,11 +48,13 @@ namespace Libplanet.Store
 
         public abstract bool DeleteBlock(HashDigest blockHash);
 
-        // public abstract States GetBlockStates(HashDigest blockHash);
-        // public abstract void SetBlockStates(HashDigest blockHash, States states);
+        public abstract States GetBlockStates(HashDigest blockHash);
+
+        public abstract void SetBlockStates(HashDigest blockHash, States states);
+
         public int CountTransactions()
         {
-            return IterateStagedTransactionIds().Count();
+            return IterateTransactionIds().Count();
         }
 
         public int CountBlocks()

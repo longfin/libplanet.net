@@ -14,7 +14,7 @@ using Libplanet.Tx;
 
 namespace Libplanet.Store
 {
-    public class FileStore : IStore
+    public class FileStore : BaseStore, IStore
     {
         private readonly string _path;
         private readonly string _transactionsPath;

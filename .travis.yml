@@ -3,6 +3,10 @@ matrix:
   - os: linux
     dist: xenial
     language: csharp
+    addons:
+      apt:
+        packaes:
+        - libxml2-utils
   - os: osx
     osx_image: xcode10.1
     language: csharp
@@ -24,10 +28,26 @@ install:
     curl -o /usr/bin/nuget.exe \
       https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
     chmod +x /usr/bin/nuget.exe
+
+    # xmllint
+    choco install xsltproc
   fi
 - nuget restore Libplanet.sln
 
 script:
+# If a tag is pushed, the NuGet package version has to be the same to
+# the tag name.
+- |
+  version="$(xmllint \
+   --xpath '/Project/PropertyGroup/Version/text()' \
+   Libplanet/Libplanet.csproj)"
+  [[ "$TRAVIS_TAG" = "" || "$version" == "$TRAVIS_TAG" ]]
+
+# Build the whole solution.
 - msbuild /p:Configuration=Release /r
+
+# Run unit tests
 - msbuild /p:Configuration=Release /t:XunitTest Libplanet.Tests
+
+# Build Libplanet.*.nupkg
 - msbuild /p:Configuration=Release /t:pack Libplanet

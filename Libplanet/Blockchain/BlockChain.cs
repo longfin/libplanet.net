@@ -13,6 +13,7 @@ using Libplanet.Blocks;
 using Libplanet.Crypto;
 using Libplanet.Store;
 using Libplanet.Tx;
+using Serilog;
 
 [assembly: InternalsVisibleTo("Libplanet.Tests")]
 namespace Libplanet.Blockchain
@@ -453,6 +454,7 @@ namespace Libplanet.Blockchain
                 timestamp: currentTime,
                 transactions: transactions
             );
+            Log.Debug($"block{block} mined. trying to append...");
             Append(block, currentTime);
 
             return block;
@@ -567,9 +569,11 @@ namespace Libplanet.Blockchain
                     nonceDeltas[txSigner] = nonceDelta + 1;
                 }
 
+                Log.Debug("Waiting for the write lock...");
                 _rwlock.EnterWriteLock();
                 try
                 {
+                    Log.Debug("The write lock acquired.");
                     Blocks[block.Hash] = block;
                     foreach (KeyValuePair<Address, long> pair in nonceDeltas)
                     {

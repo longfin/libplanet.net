@@ -15,8 +15,8 @@ To be released.
  -  Added `IBlockPolicy<T>.BlockAction` property.  [[#319], [#367]]
  -  Removed the type parameter of `ActionEvaluation`.  [[#319], [#367]]
  -  `ActionEvaluation.Action` became to `IAction` type.  [[#319], [#367]]
- -  `LiteDBStore()` constructor became to have a new option named `flush` and turned on by default.
-    [[#387], [LiteDB #1268]]
+ -  `LiteDBStore()` constructor became to have a new option named `flush` and
+    turned on by default.  [[#387], [LiteDB #1268]]
  -  `BaseIndex.ContainsKey()` method became `abstract`.  [[#390]]
  -  `BlockDownloadState.TotalBlockCount` and `BlockDownloadState.ReceivedBlockCount`
     became to `Int64` type.  [[#396], [#399]]
@@ -55,8 +55,11 @@ To be released.
     own retrieve implementations.  [[#390]]
  -  The way `LiteDBStore` stores state references became efficient,
     but the file-level backward compatibility was also broken.  [[#395], [#398]]
- -  `PreloadAsync` became to report total block download status instead of
-    chunked download status.  [[#396], [#399]]
+ -  `Swarm<T>.PreloadAsync()` method became to report a block downloading
+    progress with the total number of blocks to download in the entire batch,
+    instead of the window size of a chunk (i.e., 500).  [[#396], [#399]]
+ -  `FileStore` and `LiteDBStore` became to gurantee atomicity of storing
+    transactions. [[#413]]
 
 ### Bug fixes
 
@@ -95,6 +98,7 @@ To be released.
 [#396]: https://github.com/planetarium/libplanet/issues/396
 [#398]: https://github.com/planetarium/libplanet/pull/398
 [#399]: https://github.com/planetarium/libplanet/pull/399
+[#413]: https://github.com/planetarium/libplanet/pull/413
 [LiteDB #1268]: https://github.com/mbdavid/LiteDB/issues/1268
 
 

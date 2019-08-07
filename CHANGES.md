@@ -58,6 +58,8 @@ To be released.
  -  `Swarm<T>.PreloadAsync()` method became to report a block downloading
     progress with the total number of blocks to download in the entire batch,
     instead of the window size of a chunk (i.e., 500).  [[#396], [#399]]
+ -  `FileStore` and `LiteDBStore` became to gurantee atomicity of storing
+    transactions. [[#413]]
 
 ### Bug fixes
 
@@ -96,6 +98,7 @@ To be released.
 [#396]: https://github.com/planetarium/libplanet/issues/396
 [#398]: https://github.com/planetarium/libplanet/pull/398
 [#399]: https://github.com/planetarium/libplanet/pull/399
+[#413]: https://github.com/planetarium/libplanet/pull/413
 [LiteDB #1268]: https://github.com/mbdavid/LiteDB/issues/1268
 
 

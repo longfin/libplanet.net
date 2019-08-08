@@ -274,13 +274,6 @@ namespace Libplanet.Store
             _txLock.EnterUpgradeableReadLock();
             try
             {
-                LiteFileInfo file = _db.FileStorage.FindById(fileId);
-                if (file is LiteFileInfo)
-                {
-                    // No-op if already exists.
-                    return;
-                }
-
                 _txLock.EnterWriteLock();
                 try
                 {

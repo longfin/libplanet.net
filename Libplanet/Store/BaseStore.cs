@@ -120,11 +120,20 @@ namespace Libplanet.Store
             string @namespace, Address address);
 
         /// <inheritdoc />
-        public abstract void StoreStateReference<T>(
+        public void StoreStateReference<T>(
             string @namespace,
             IImmutableSet<Address> addresses,
             Block<T> block)
-            where T : IAction, new();
+            where T : IAction, new()
+        {
+            StoreStateReference(@namespace, addresses, block.Hash, block.Index);
+        }
+
+        public abstract void StoreStateReference(
+            string @namespace,
+            IImmutableSet<Address> addresses,
+            HashDigest<SHA256> hashDigest,
+            long index);
 
         /// <inheritdoc />
         public abstract void ForkStateReferences<T>(

@@ -187,6 +187,17 @@ namespace Libplanet.Tests.Store
             _store.StoreStateReference(@namespace, addresses, block);
         }
 
+        public void StoreStateReference(
+            string @namespace,
+            IImmutableSet<Address> addresses,
+            HashDigest<SHA256> blockHash,
+            long blockIndex)
+        {
+            // FIXME: Log arguments properly (including @namespace).
+            _logs.Add((nameof(StoreStateReference), blockHash, null));
+            _store.StoreStateReference(@namespace, addresses, blockHash, blockIndex);
+        }
+
         public void ForkStateReferences<T>(
             string sourceNamespace,
             string destinationNamespace,

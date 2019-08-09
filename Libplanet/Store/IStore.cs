@@ -212,6 +212,12 @@ namespace Libplanet.Store
             Block<T> block)
             where T : IAction, new();
 
+        void StoreStateReference(
+            string @namespace,
+            IImmutableSet<Address> addresses,
+            HashDigest<SHA256> blockHash,
+            long blockIndex);
+
         /// <summary>
         /// Forks state references, which are <see cref="Block{T}.Hash"/>es that
         /// have the state of the <see cref="Address"/>es, from

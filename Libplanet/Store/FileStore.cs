@@ -733,13 +733,12 @@ namespace Libplanet.Store
         }
 
         /// <inheritdoc/>
-        public override void StoreStateReference<T>(
+        public override void StoreStateReference(
             string @namespace,
             IImmutableSet<Address> addresses,
-            Block<T> block)
+            HashDigest<SHA256> blockHash,
+            long blockIndex)
         {
-            HashDigest<SHA256> blockHash = block.Hash;
-            long blockIndex = block.Index;
             int hashSize = HashDigest<SHA256>.Size;
 
             foreach (Address address in addresses)

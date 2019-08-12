@@ -2085,7 +2085,11 @@ namespace Libplanet.Net
                     raw.FrameCount
                 );
                 Message message = Message.Parse(raw, reply: false);
-                _logger.Debug("A message has parsed: {0}", message);
+                _logger.Debug(
+                    "A message has parsed: {0}, from: {1}",
+                    message,
+                    ByteUtil.Hex(message.Identity)
+                );
 
                 // it's still async because some method it relies are async yet.
                 Task.Run(
@@ -2155,18 +2159,26 @@ namespace Libplanet.Net
         private void DoReply(object sender, NetMQQueueEventArgs<Message> e)
         {
             Message msg = e.Queue.Dequeue();
-            _logger.Debug($"Reply {msg} to {ByteUtil.Hex(msg.Identity)}...");
+            _logger.Debug(
+                "Reply {0} to {1}...",
+                msg,
+                ByteUtil.Hex(msg.Identity)
+            );
             NetMQMessage netMQMessage = msg.ToNetMQMessage(_privateKey);
 
             // FIXME The current timeout value(1 sec) is arbitrary.
             // We should make this configurable or fix it to an unneeded structure.
             if (_router.TrySendMultipartMessage(TimeSpan.FromSeconds(1), netMQMessage))
             {
-                _logger.Debug($"Message[{msg}] replied.");
+                _logger.Debug("Message[{0}] replied to {1}.", msg, ByteUtil.Hex(msg.Identity));
             }
             else
             {
-                _logger.Debug($"Message[{msg}] replying failed.");
+                _logger.Debug(
+                    "Message[{0}] replying to {1} failed.",
+                    msg,
+                    ByteUtil.Hex(msg.Identity)
+                );
             }
         }
 

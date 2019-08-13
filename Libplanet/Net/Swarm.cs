@@ -39,9 +39,9 @@ namespace Libplanet.Net
         private static readonly TimeSpan TurnPermissionLifetime =
             TimeSpan.FromMinutes(5);
 
-        private static readonly TimeSpan BlockHashRecvTimeout = TimeSpan.FromSeconds(3);
+        private static readonly TimeSpan BlockHashRecvTimeout = TimeSpan.FromSeconds(15);
         private static readonly TimeSpan BlockRecvTimeout = TimeSpan.FromSeconds(15);
-        private static readonly TimeSpan TxRecvTimeout = TimeSpan.FromSeconds(3);
+        private static readonly TimeSpan TxRecvTimeout = TimeSpan.FromSeconds(15);
 
         private readonly IDictionary<Peer, DateTimeOffset> _peers;
         private readonly IDictionary<Peer, DateTimeOffset> _removedPeers;

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -13,6 +14,7 @@ using Libplanet.Blocks;
 using Libplanet.Crypto;
 using Libplanet.Store;
 using Libplanet.Tx;
+using Serilog;
 
 [assembly: InternalsVisibleTo("Libplanet.Tests")]
 namespace Libplanet.Blockchain
@@ -798,20 +800,34 @@ namespace Libplanet.Blockchain
 
         internal BlockChain<T> Fork(HashDigest<SHA256> point)
         {
+            Log.Debug("Fork debug mode.");
+            var sw = new Stopwatch();
+            sw.Start();
             var forked = new BlockChain<T>(Policy, Store, Guid.NewGuid());
             string id = Id.ToString();
             string forkedId = forked.Id.ToString();
             try
             {
                 _rwlock.EnterReadLock();
-                foreach (var index in Store.IterateIndex(id))
+                if (Store is LiteDBStore liteDBStore)
                 {
-                    Store.AppendIndex(forkedId, index);
-                    if (index.Equals(point))
+                    liteDBStore.ForkIndex(id, forkedId, point);
+                }
+                else
+                {
+                    foreach (var index in Store.IterateIndex(id))
                     {
-                        break;
+                        Store.AppendIndex(forkedId, index);
+                        if (index.Equals(point))
+                        {
+                            break;
+                        }
                     }
                 }
+
+                sw.Stop();
+                Log.Debug($"index copy: {sw.Elapsed}");
+                sw.Restart();
 
                 Block<T> pointBlock = Blocks[point];
 
@@ -844,11 +860,19 @@ namespace Libplanet.Blockchain
                     }
                 }
 
+                sw.Stop();
+                Log.Debug($"calc addressstrips: {sw.Elapsed}");
+                sw.Restart();
+
                 Store.ForkStateReferences(
                     id,
                     forked.Id.ToString(),
                     pointBlock,
                     addressesToStrip.ToImmutableHashSet());
+
+                sw.Stop();
+                Log.Debug($"fork stateref: {sw.Elapsed}");
+                sw.Restart();
 
                 foreach (KeyValuePair<Address, long> pair in Store.ListTxNonces(id))
                 {
@@ -874,6 +898,10 @@ namespace Libplanet.Blockchain
                     // it's merely "setting" rather than "increasing."
                     Store.IncreaseTxNonce(forkedId, address, txNonce);
                 }
+
+                sw.Stop();
+                Log.Debug($"tx proccess: {sw.Elapsed}");
+                sw.Restart();
             }
             finally
             {

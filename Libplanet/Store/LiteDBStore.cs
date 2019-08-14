@@ -552,6 +552,18 @@ namespace Libplanet.Store
             }
         }
 
+        internal void ForkIndex(
+            string srcNamespace,
+            string destNamespace,
+            HashDigest<SHA256> point)
+        {
+            LiteCollection<HashDoc> srcColl = IndexCollection(srcNamespace);
+            LiteCollection<HashDoc> destColl = IndexCollection(destNamespace);
+
+            destColl.InsertBulk(srcColl.FindAll().TakeWhile(i => !i.Hash.Equals(point)));
+            AppendIndex(destNamespace, point);
+        }
+
         private string TxFileId(TxId txid)
         {
             return $"{TxIdPrefix}{txid.ToHex()}";

@@ -592,6 +592,8 @@ namespace Libplanet.Net
                 ? _blockChain.Fork(tip.Hash)
                 : new BlockChain<T>(_blockChain.Policy, _blockChain.Store, Guid.NewGuid());
 
+            var complete = false;
+
             try
             {
                 await SyncBehindsBlocksFromPeersAsync(
@@ -667,6 +669,8 @@ namespace Libplanet.Net
 
                     _logger.Debug("Finished to execute actions.");
                 }
+
+                complete = true;
             }
             finally
             {
@@ -675,7 +679,9 @@ namespace Libplanet.Net
                     _logger.Information($"{nameof(PreloadAsync)}() is canceled.");
                 }
 
-                if (workspace.Tip == _blockChain.Tip || cancellationToken.IsCancellationRequested)
+                if (!complete
+                    || workspace.Tip == _blockChain.Tip
+                    || cancellationToken.IsCancellationRequested)
                 {
                     _logger.Debug(
                         "Preloading is aborted; delete the temporary working chain ({0}: {1}), " +

@@ -63,6 +63,16 @@ namespace Libplanet.Blockchain
             {
                 Store.SetCanonicalNamespace(Id.ToString());
             }
+
+            var fftStartedAt = new DateTimeOffset(2019, 8, 19, 13, 0, 0, TimeSpan.FromHours(9));
+            var prevTxs = Store.IterateStagedTransactionIds()
+                .Select(Store.GetTransaction<T>)
+                .Where(tx => tx.Timestamp < fftStartedAt)
+                .ToList();
+            if (prevTxs.Count > 0)
+            {
+                UnstageTransactions(new HashSet<Transaction<T>>(prevTxs));
+            }
         }
 
         ~BlockChain()

@@ -2139,12 +2139,15 @@ namespace Libplanet.Net
             {
                 // FIXME The current timeout value(1 sec) is arbitrary.
                 // We should make this configurable or fix it to an unneeded structure.
-                _dealers.Values.ParallelForEachAsync(async s =>
+                _dealers.ParallelForEachAsync(async kv =>
                 {
-                    await Task.Run(() =>
+                    if (!kv.Key.Equals(Address))
                     {
-                        s.TrySendMultipartMessage(TimeSpan.FromSeconds(1), netMQMessage);
-                    });
+                        await Task.Run(() =>
+                        {
+                            kv.Value.TrySendMultipartMessage(TimeSpan.FromSeconds(1), netMQMessage);
+                        });
+                    }
                 });
             }
             catch (TimeoutException ex)

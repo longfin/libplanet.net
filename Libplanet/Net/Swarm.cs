@@ -1723,7 +1723,12 @@ namespace Libplanet.Net
         {
             Peer sender = delta.Sender;
 
-            if (IsUnknownPeer(sender))
+            if (sender.Address.Equals(Address))
+            {
+                _logger.Debug($"The sender[{sender}] seems itself. ignored.");
+                return;
+            }
+            else if (IsUnknownPeer(sender))
             {
                 _logger.Debug("The sender of delta is unknown.");
                 if (IsDifferentProtocolVersion(sender) &&

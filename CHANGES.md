@@ -102,6 +102,8 @@ To be released.
 
  -  Fixed a bug that `Swarm<T>` hadn't released its TURN related resources on
     `Swarm<T>.StopAsync()`.  [[#450]]
+ -  Fixed a bug that `IActionContext.Random` had generated the same result in
+    different `IAction.Execute()` against the same `Block<T>`.  [[#519]]
 
 [#244]: https://github.com/planetarium/libplanet/issues/244
 [#353]: https://github.com/planetarium/libplanet/pull/353
@@ -120,6 +122,7 @@ To be released.
 [#508]: https://github.com/planetarium/libplanet/pull/508
 [#511]: https://github.com/planetarium/libplanet/pull/511
 [#512]: https://github.com/planetarium/libplanet/pull/512
+[#519]: https://github.com/planetarium/libplanet/pull/519
 [Kademlia]: https://en.wikipedia.org/wiki/Kademlia
 [Guid]: https://docs.microsoft.com/ko-kr/dotnet/api/system.guid?view=netframework-4.8
 

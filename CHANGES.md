@@ -103,7 +103,7 @@ To be released.
  -  Fixed a bug that `Swarm<T>` hadn't released its TURN related resources on
     `Swarm<T>.StopAsync()`.  [[#450]]
  -  Fixed a bug that `IActionContext.Random` had generated the same result in
-    different `IAction.Execute()` against the same `Block<T>`.  [[519]]
+    different `IAction.Execute()` against the same `Block<T>`.  [[#519]]
 
 [#244]: https://github.com/planetarium/libplanet/issues/244
 [#353]: https://github.com/planetarium/libplanet/pull/353

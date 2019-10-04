@@ -40,9 +40,9 @@ namespace Libplanet.Net
         private static readonly TimeSpan TurnPermissionLifetime =
             TimeSpan.FromMinutes(5);
 
-        private static readonly TimeSpan BlockHashRecvTimeout = TimeSpan.FromSeconds(3);
-        private static readonly TimeSpan BlockRecvTimeout = TimeSpan.FromSeconds(15);
-        private static readonly TimeSpan TxRecvTimeout = TimeSpan.FromSeconds(3);
+        private static readonly TimeSpan BlockHashRecvTimeout = TimeSpan.FromSeconds(15);
+        private static readonly TimeSpan BlockRecvTimeout = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan TxRecvTimeout = TimeSpan.FromSeconds(15);
 
         private static readonly int MaxDealerCount = 20;
 
@@ -244,7 +244,7 @@ namespace Libplanet.Net
 
         internal IProtocol Protocol => _protocol;
 
-        internal int FindNextHashesChunkSize { get; set; } = 500;
+        internal int FindNextHashesChunkSize { get; set; } = 50;
 
         /// <summary>
         /// Waits until this <see cref="Swarm{T}"/> instance gets started to run.

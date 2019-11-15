@@ -265,7 +265,7 @@ namespace Libplanet.Net
 
         internal IProtocol Protocol { get; private set; }
 
-        internal int FindNextHashesChunkSize { get; set; } = 500;
+        internal int FindNextHashesChunkSize { get; set; } = 100;
 
         internal AsyncAutoResetEvent FillBlocksAsyncStarted { get; } = new AsyncAutoResetEvent();
 

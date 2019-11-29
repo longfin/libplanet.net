@@ -142,7 +142,7 @@ namespace Libplanet.Store
             _txCache = new LruCache<TxId, object>(capacity: txCacheSize);
             _blockCache = new LruCache<HashDigest<SHA256>, RawBlock>(capacity: blockCacheSize);
 
-            _statesCache = new LruCache<HashDigest<SHA256>, AddressStateMap>(capacity: 10000);
+            _statesCache = new LruCache<HashDigest<SHA256>, AddressStateMap>(capacity: 100000);
         }
 
         private LiteCollection<StagedTxIdDoc> StagedTxIds =>

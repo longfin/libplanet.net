@@ -43,6 +43,7 @@ namespace Libplanet.Store
 
         private readonly LruCache<TxId, object> _txCache;
         private readonly LruCache<HashDigest<SHA256>, RawBlock> _blockCache;
+        private readonly LruCache<HashDigest<SHA256>, AddressStateMap> _statesCache;
 
         private readonly MemoryStream _memoryStream;
 
@@ -138,6 +139,8 @@ namespace Libplanet.Store
 
             _txCache = new LruCache<TxId, object>(capacity: txCacheSize);
             _blockCache = new LruCache<HashDigest<SHA256>, RawBlock>(capacity: blockCacheSize);
+
+            _statesCache = new LruCache<HashDigest<SHA256>, AddressStateMap>(capacity: 10000);
         }
 
         private LiteCollection<StagedTxIdDoc> StagedTxIds =>
@@ -464,6 +467,11 @@ namespace Libplanet.Store
         /// <inheritdoc/>
         public override AddressStateMap GetBlockStates(HashDigest<SHA256> blockHash)
         {
+            if (_statesCache.TryGetValue(blockHash, out AddressStateMap cached))
+            {
+                return cached;
+            }
+
             LiteFileInfo file =
                 _db.FileStorage.FindById(BlockStateFileId(blockHash));
             if (file is null)
@@ -476,7 +484,11 @@ namespace Libplanet.Store
                 DownloadFile(file, stream);
                 stream.Seek(0, SeekOrigin.Begin);
                 var formatter = new BencodexFormatter<AddressStateMap>();
-                return (AddressStateMap)formatter.Deserialize(stream);
+
+                var states = (AddressStateMap)formatter.Deserialize(stream);
+                _statesCache.AddOrUpdate(blockHash, states);
+
+                return states;
             }
         }
 
@@ -485,6 +497,7 @@ namespace Libplanet.Store
             HashDigest<SHA256> blockHash,
             AddressStateMap states)
         {
+            _statesCache.AddOrUpdate(blockHash, states);
             using (var stream = new MemoryStream())
             {
                 var formatter = new BencodexFormatter<AddressStateMap>();

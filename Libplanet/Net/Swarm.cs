@@ -1227,7 +1227,7 @@ namespace Libplanet.Net
                     reply = await (this as ISwarm).SendMessageWithReplyAsync(
                         peer,
                         request,
-                        timeout: TimeSpan.FromSeconds(30),
+                        timeout: TimeSpan.FromSeconds(300),
                         cancellationToken: cancellationToken
                     );
 

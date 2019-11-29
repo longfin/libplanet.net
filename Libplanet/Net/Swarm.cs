@@ -26,7 +26,6 @@ using NetMQ;
 using NetMQ.Sockets;
 using Nito.AsyncEx;
 using Serilog;
-using Serilog.Events;
 
 namespace Libplanet.Net
 {
@@ -1995,38 +1994,6 @@ namespace Libplanet.Net
                 finally
                 {
                     rwlock.ExitReadLock();
-                }
-            }
-
-            if (_logger.IsEnabled(LogEventLevel.Debug))
-            {
-                if (_store.ContainsBlock(target))
-                {
-                    var baseString = @base is HashDigest<SHA256> h
-                        ? $"{BlockChain[h].Index}:{h}"
-                        : null;
-                    var targetString = $"{BlockChain[target].Index}:{target}";
-                    _logger.Debug(
-                        "State references to send (preload): {StateReferences} ({Base}-{Target})",
-                        stateRefs.Select(kv =>
-                            (
-                                kv.Key.ToString(),
-                                string.Join(", ", kv.Value.Select(v => v.ToString()))
-                            )
-                        ).ToArray(),
-                        baseString,
-                        targetString
-                    );
-                    _logger.Debug(
-                        "Block states to send (preload): {BlockStates} ({Base}-{Target})",
-                        blockStates.Select(kv => (kv.Key.ToString(), kv.Value)).ToArray(),
-                        baseString,
-                        targetString
-                    );
-                }
-                else
-                {
-                    _logger.Debug("Nothing to reply because {TargetHash} doesn't exist.", target);
                 }
             }
 

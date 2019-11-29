@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using Libplanet.Action;
 using Libplanet.Blocks;
+using LiteDB;
 
 namespace Libplanet.Store
 {
@@ -73,27 +74,42 @@ namespace Libplanet.Store
                 ignoreAfter is HashDigest<SHA256> tgt && store.GetBlockIndex(tgt) is long tgtIdx
                     ? (tgt, tgtIdx)
                     : null as (HashDigest<SHA256>, long)?;
-            return store.ListAddresses(chainId).Select(address =>
+
+            var highestIndex = targetBlock?.Item2 ?? long.MaxValue;
+            var lowestIndex = baseBlock?.Item2 ?? -1;
+
+            string collId = ((DefaultStore)store).StateRefId(chainId);
+            LiteCollection<DefaultStore.StateRefDoc> coll = ((DefaultStore)store)._db
+                .GetCollection<DefaultStore.StateRefDoc>(collId);
+
+            IEnumerable<DefaultStore.StateRefDoc> stateRefs = coll.Find(
+                Query.And(
+                    Query.All("BlockIndex", Query.Ascending),
+                    Query.Between("BlockIndex", lowestIndex + 1, highestIndex)
+                )
+            );
+
+            var d = new Dictionary<Address, List<HashDigest<SHA256>>>();
+
+            foreach (var stateRef in stateRefs)
             {
-                IEnumerable<Tuple<HashDigest<SHA256>, long>> refIndices =
-                    store.IterateStateReferences(chainId, address);
-
-                if (targetBlock is ValueTuple<HashDigest<SHA256>, long> targetIndex)
+                var address = stateRef.Address;
+                if (!d.ContainsKey(address))
                 {
-                    refIndices = refIndices.SkipWhile(p => p.Item2 > targetIndex.Item2);
+                    d[address] = new List<HashDigest<SHA256>>();
                 }
 
-                if (baseBlock is ValueTuple<HashDigest<SHA256>, long> baseIndex)
-                {
-                    refIndices = refIndices.TakeWhile(p => p.Item2 > baseIndex.Item2);
-                }
+                d[address].Add(stateRef.BlockHash);
+            }
 
-                ImmutableList<HashDigest<SHA256>> refs = refIndices
-                    .Select(p => p.Item1)
-                    .Reverse()
-                    .ToImmutableList();
-                return new KeyValuePair<Address, IImmutableList<HashDigest<SHA256>>>(address, refs);
-            }).Where(pair => pair.Value.Any()).ToImmutableDictionary();
+            var dd = new Dictionary<Address, IImmutableList<HashDigest<SHA256>>>();
+
+            foreach (var kv in d)
+            {
+                dd[kv.Key] = kv.Value.ToImmutableList();
+            }
+
+            return dd.ToImmutableDictionary();
         }
     }
 }

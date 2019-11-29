@@ -47,7 +47,9 @@ namespace Libplanet.Store
 
         private readonly MemoryStream _memoryStream;
 
-        private readonly LiteDatabase _db;
+#pragma warning disable SA1401, SA1202
+        internal readonly LiteDatabase _db;
+#pragma warning restore SA1401, SA1202
 
         /// <summary>
         /// Creates a new <seealso cref="DefaultStore"/>.
@@ -767,10 +769,12 @@ namespace Libplanet.Store
             return $"state/{blockHash}";
         }
 
-        private string StateRefId(Guid chainId)
+#pragma warning disable SA1401, SA1202
+        internal string StateRefId(Guid chainId)
         {
             return $"{StateRefIdPrefix}{FormatChainId(chainId)}";
         }
+#pragma warning restore SA1401, SA1202
 
         private string TxNonceId(Guid chainId)
         {

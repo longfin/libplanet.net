@@ -444,9 +444,6 @@ namespace Libplanet.Net
                 EndPoint = new DnsEndPoint(turnEp.Address.ToString(), turnEp.Port);
 
                 // FIXME should be parameterized
-                tasks.Add(BindingProxies(_cancellationToken));
-                tasks.Add(BindingProxies(_cancellationToken));
-                tasks.Add(BindingProxies(_cancellationToken));
                 tasks.Add(RefreshAllocate(_cancellationToken));
                 tasks.Add(RefreshPermissions(_cancellationToken));
             }
@@ -482,6 +479,14 @@ namespace Libplanet.Net
 
             try
             {
+                _poller.RunAsync();
+                if (!(_turnClient is null))
+                {
+                    tasks.Add(BindingProxies(_cancellationToken));
+                    tasks.Add(BindingProxies(_cancellationToken));
+                    tasks.Add(BindingProxies(_cancellationToken));
+                }
+
                 tasks.Add(BroadcastTxAsync(broadcastTxInterval, _cancellationToken));
                 tasks.Add(
                     RefreshTableAsync(

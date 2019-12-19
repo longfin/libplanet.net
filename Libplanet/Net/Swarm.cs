@@ -469,11 +469,6 @@ namespace Libplanet.Net
 
             using (await _runningMutex.LockAsync())
             {
-                await PreloadAsync(
-                    dialTimeout: dialTimeout,
-                    render: true,
-                    cancellationToken: _cancellationToken
-                );
                 Running = true;
             }
 
@@ -494,7 +489,6 @@ namespace Libplanet.Net
                         TimeSpan.FromSeconds(10),
                         _cancellationToken));
                 tasks.Add(RebuildConnectionAsync(TimeSpan.FromMinutes(30), _cancellationToken));
-                _poller.RunAsync();
                 _logger.Debug("Swarm started.");
 
                 await await Task.WhenAny(tasks);
@@ -2197,7 +2191,7 @@ namespace Libplanet.Net
             {
                 NetMQMessage raw = e.Socket.ReceiveMultipartMessage();
 
-                _logger.Verbose(
+                _logger.Debug(
                     "A raw message [frame count: {0}] has received.",
                     raw.FrameCount
                 );

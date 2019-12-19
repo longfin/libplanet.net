@@ -387,6 +387,7 @@ namespace Libplanet.Tests.Net
                 Assert.Empty(swarmB.Peers);
 
                 await StartAsync(swarmA);
+                await Task.Delay(TimeSpan.FromSeconds(11));
                 Assert.Contains(swarmA.AsPeer, swarmB.Peers);
             }
             finally

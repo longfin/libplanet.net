@@ -436,6 +436,23 @@ namespace Libplanet.Net
                 }
             }
 
+            _replyQueue = new NetMQQueue<Message>();
+            _broadcastQueue = new NetMQQueue<(Address?, Message)>();
+            _poller = new NetMQPoller { _router, _replyQueue, _broadcastQueue };
+
+            _router.ReceiveReady += ReceiveMessage;
+            _replyQueue.ReceiveReady += DoReply;
+            _broadcastQueue.ReceiveReady += DoBroadcast;
+
+            _logger.Debug("Starting swarm...");
+
+            using (await _runningMutex.LockAsync())
+            {
+                Running = true;
+            }
+
+            _poller.RunAsync();
+
             if (_behindNAT)
             {
                 IPEndPoint turnEp = await _turnClient.AllocateRequestAsync(
@@ -443,7 +460,7 @@ namespace Libplanet.Net
                 );
                 EndPoint = new DnsEndPoint(turnEp.Address.ToString(), turnEp.Port);
 
-                // FIXME should be parameterized
+                tasks.Add(BindingProxies(_cancellationToken));
                 tasks.Add(RefreshAllocate(_cancellationToken));
                 tasks.Add(RefreshPermissions(_cancellationToken));
             }
@@ -456,32 +473,10 @@ namespace Libplanet.Net
                 EndPoint = new DnsEndPoint(_host, _listenPort.Value);
             }
 
-            _replyQueue = new NetMQQueue<Message>();
-            _broadcastQueue = new NetMQQueue<(Address?, Message)>();
-            _poller = new NetMQPoller { _router, _replyQueue, _broadcastQueue };
-
-            _router.ReceiveReady += ReceiveMessage;
-            _replyQueue.ReceiveReady += DoReply;
-            _broadcastQueue.ReceiveReady += DoBroadcast;
-
-            _logger.Debug("Starting swarm...");
             _logger.Debug("Peer information : {Peer}", AsPeer);
-
-            using (await _runningMutex.LockAsync())
-            {
-                Running = true;
-            }
 
             try
             {
-                _poller.RunAsync();
-                if (!(_turnClient is null))
-                {
-                    tasks.Add(BindingProxies(_cancellationToken));
-                    tasks.Add(BindingProxies(_cancellationToken));
-                    tasks.Add(BindingProxies(_cancellationToken));
-                }
-
                 tasks.Add(BroadcastTxAsync(broadcastTxInterval, _cancellationToken));
                 tasks.Add(
                     RefreshTableAsync(

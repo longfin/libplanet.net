@@ -64,7 +64,7 @@ namespace Libplanet.Stun
             TimeSpan lifetime,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            EnsureConnection();
+            await EnsureConnection();
 
             NetworkStream stream = _control.GetStream();
             StunMessage response;
@@ -99,7 +99,7 @@ namespace Libplanet.Stun
             IPEndPoint peerAddress,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            EnsureConnection();
+            await EnsureConnection();
 
             NetworkStream stream = _control.GetStream();
             var request = new CreatePermissionRequest(peerAddress);
@@ -117,42 +117,34 @@ namespace Libplanet.Stun
         public async Task<NetworkStream> AcceptRelayedStreamAsync(
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            while (true)
+            await EnsureConnection();
+
+            ConnectionAttempt attempt =
+                await _connectionAttempts.DequeueAsync(cancellationToken);
+            Log.Information("attempt cached: {attempt}", attempt);
+
+            byte[] id = attempt.ConnectionId;
+            var bindRequest = new ConnectionBindRequest(id);
+            var relayedClient = new TcpClient(_host, _port);
+            NetworkStream relayedStream = relayedClient.GetStream();
+
+            await SendMessageAsync(relayedStream, bindRequest, cancellationToken);
+
+            StunMessage bindResponse = await StunMessage.Parse(relayedStream);
+
+            if (bindResponse is ConnectionBindSuccessResponse)
             {
-                EnsureConnection();
-
-                ConnectionAttempt attempt =
-                    await _connectionAttempts.DequeueAsync(cancellationToken);
-
-                byte[] id = attempt.ConnectionId;
-                var bindRequest = new ConnectionBindRequest(id);
-                var relayedClient = new TcpClient(_host, _port);
-                NetworkStream relayedStream = relayedClient.GetStream();
-
-                try
-                {
-                    await SendMessageAsync(relayedStream, bindRequest, cancellationToken);
-                    StunMessage bindResponse = await StunMessage.Parse(relayedStream);
-
-                    if (bindResponse is ConnectionBindSuccessResponse)
-                    {
-                        _relayedClients.Add(relayedClient);
-                        return relayedStream;
-                    }
-
-                    throw new TurnClientException("ConnectionBind failed.", bindResponse);
-                }
-                catch (IOException e)
-                {
-                    Log.Warning(e, "The connection seems to disconnect before parsing; ignored.");
-                }
+                _relayedClients.Add(relayedClient);
+                return relayedStream;
             }
+
+            throw new TurnClientException("ConnectionBind failed.", bindResponse);
         }
 
         public async Task<IPEndPoint> GetMappedAddressAsync(
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            EnsureConnection();
+            await EnsureConnection();
 
             NetworkStream stream = _control.GetStream();
             var request = new BindingRequest();
@@ -173,7 +165,7 @@ namespace Libplanet.Stun
             TimeSpan lifetime,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            EnsureConnection();
+            await EnsureConnection();
 
             NetworkStream stream = _control.GetStream();
             var request = new RefreshRequest((int)lifetime.TotalSeconds);
@@ -265,16 +257,16 @@ namespace Libplanet.Stun
             }
         }
 
-        private void EnsureConnection()
+        private async Task EnsureConnection()
         {
-            using (_connMutex.Lock())
+            using (await _connMutex.LockAsync())
             {
                 if (!_control.Connected)
                 {
                     // We can't use TcpClient.ConnectAsync() because it hangs when received
                     // unreachable host (on Linux Mono).
 #pragma warning disable PC001 // API not supported on all platforms
-                    _control.Connect(_host, _port);
+                    await _control.ConnectAsync(_host, _port);
 #pragma warning restore PC001 // API not supported on all platforms
                     _messageProcessor = ProcessMessage();
                 }

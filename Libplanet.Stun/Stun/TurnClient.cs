@@ -238,7 +238,7 @@ namespace Libplanet.Stun
                 NetworkStream upstream = await AcceptRelayedStreamAsync(cancellationToken);
 #pragma warning restore IDE0067
 #pragma warning disable CS4014
-                Task.WhenAny(
+                (await Task.WhenAny(
                     upstream.CopyToAsync(downstream).ContinueWith(t =>
                     {
                         if (t.Exception?.InnerException is SocketException se)
@@ -253,7 +253,7 @@ namespace Libplanet.Stun
                             Log.Error(se, "down to up failed.");
                         }
                     })
-                ).ContinueWith(
+                )).ContinueWith(
                     t =>
                     {
                         upstream.Dispose();

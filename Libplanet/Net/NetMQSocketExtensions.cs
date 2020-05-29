@@ -39,7 +39,6 @@ namespace Libplanet.Net
 
                 cts.Dispose();
                 ct.Dispose();
-                return t;
             });
         }
 

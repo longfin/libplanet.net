@@ -7,7 +7,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Libplanet.Net;
 using Libplanet.Stun.Messages;
 using Nito.AsyncEx;
 using Serilog;
@@ -122,6 +121,7 @@ namespace Libplanet.Stun
 
                 ConnectionAttempt attempt =
                     await _connectionAttempts.DequeueAsync(cancellationToken);
+                Log.Debug("TURN: dequeud.");
 
                 byte[] id = attempt.ConnectionId;
                 var bindRequest = new ConnectionBindRequest(id);
@@ -131,7 +131,9 @@ namespace Libplanet.Stun
                 try
                 {
                     await SendMessageAsync(relayedStream, bindRequest, cancellationToken);
+                    Log.Debug("TURN: BindRequest sent.");
                     StunMessage bindResponse = await StunMessage.Parse(relayedStream);
+                    Log.Debug("TURN: BindResponse received.");
 
                     if (bindResponse is ConnectionBindSuccessResponse)
                     {
@@ -225,21 +227,40 @@ namespace Libplanet.Stun
         {
             while (!cancellationToken.IsCancellationRequested)
             {
+#pragma warning disable S2930 // "IDisposables" should be disposed
+                var tcpClient = new TcpClient();
+#pragma warning restore S2930 // "IDisposables" should be disposed
+#pragma warning disable PC001  // API not supported on all platforms
+                tcpClient.Connect(new IPEndPoint(IPAddress.Loopback, listenPort));
+#pragma warning restore PC001
+                NetworkStream downstream = tcpClient.GetStream();
 #pragma warning disable IDE0067 // We'll dispose of `stream` in proxy task.
-                NetworkStream stream = await AcceptRelayedStreamAsync(cancellationToken);
+                NetworkStream upstream = await AcceptRelayedStreamAsync(cancellationToken);
 #pragma warning restore IDE0067
-
-                // TODO We should expose the interface so that library users
-                // can limit / manage the task.
-                Func<Task> startAsync = async () =>
-                {
-                    using var proxy = new NetworkStreamProxy(stream);
-                    await proxy.StartAsync(IPAddress.Loopback, listenPort);
-                };
-
 #pragma warning disable CS4014
-                Task.Run(startAsync, cancellationToken)
-                    .ContinueWith(_ => stream.Dispose(), cancellationToken);
+                Task.WhenAny(
+                    upstream.CopyToAsync(downstream).ContinueWith(t =>
+                    {
+                        if (t.Exception?.InnerException is SocketException se)
+                        {
+                            Log.Error(se, "up to down failed.");
+                        }
+                    }),
+                    downstream.CopyToAsync(upstream).ContinueWith(t =>
+                    {
+                        if (t.Exception?.InnerException is SocketException se)
+                        {
+                            Log.Error(se, "down to up failed.");
+                        }
+                    })
+                ).ContinueWith(
+                    t =>
+                    {
+                        upstream.Dispose();
+                        tcpClient.Dispose();
+                    },
+                    cancellationToken
+                );
 #pragma warning restore CS4014
             }
         }
@@ -268,9 +289,13 @@ namespace Libplanet.Stun
                 {
                     StunMessage message = await StunMessage.Parse(stream);
 
+                    Log.Debug("TURN: raw message received.");
+
                     if (message is ConnectionAttempt attempt)
                     {
+                        Log.Debug("TURN: ConnectionAttempt.");
                         await _connectionAttempts.EnqueueAsync(attempt);
+                        Log.Debug("TURN: Enqueud.");
                     }
                     else if (_responses.TryGetValue(
                         message.TransactionId,

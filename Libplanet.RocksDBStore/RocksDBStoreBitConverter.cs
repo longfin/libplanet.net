@@ -8,7 +8,7 @@ namespace Libplanet.RocksDBStore
     /// <see cref="RocksDBStore"/>.  Every integer data is converted to Big-endian, or
     /// "Network Byte Order" to order index lexicographically.
     /// </summary>
-    internal static class RocksDBStoreBitConverter
+    public static class RocksDBStoreBitConverter
     {
         /// <summary>
         /// Get <c>long</c> representation of the <paramref name="value"/>.

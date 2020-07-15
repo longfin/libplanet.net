@@ -116,6 +116,8 @@ namespace Libplanet.RocksDBStore
             _stateRefDb = OpenRocksDb(_options, StateRefDbName, stateRefDbColumnFamilies);
         }
 
+        public RocksDb StateRefDb => _stateRefDb;
+
         /// <inheritdoc/>
         public override IEnumerable<Guid> ListChainIds()
         {
@@ -855,6 +857,39 @@ namespace Libplanet.RocksDBStore
             _stagedTxDb?.Dispose();
         }
 
+        public byte[] StateRefKey(string stateKey, long blockIndex)
+        {
+            byte[] stateKeyBytes = RocksDBStoreBitConverter.GetBytes(stateKey);
+            byte[] blockIndexBytes = RocksDBStoreBitConverter.GetBytes(blockIndex);
+
+            return StateRefKeyPrefix
+                .Concat(stateKeyBytes)
+                .Concat(blockIndexBytes)
+                .ToArray();
+        }
+
+        public ColumnFamilyHandle GetColumnFamily(RocksDb db, Guid? chainId = null)
+        {
+            if (chainId is null)
+            {
+                return null;
+            }
+
+            var cfName = chainId.ToString();
+
+            ColumnFamilyHandle cf;
+            try
+            {
+                cf = db.GetColumnFamily(cfName);
+            }
+            catch (KeyNotFoundException)
+            {
+                cf = db.CreateColumnFamily(_options, cfName);
+            }
+
+            return cf;
+        }
+
         /// <summary>
         /// Deletes the states with specified keys (i.e., <paramref name="stateKeys"/>)
         /// updated by actions in the specified block (i.e., <paramref name="blockHash"/>).
@@ -955,17 +990,6 @@ namespace Libplanet.RocksDBStore
             return StagedTxKeyPrefix.Concat(txId.ToByteArray()).ToArray();
         }
 
-        private byte[] StateRefKey(string stateKey, long blockIndex)
-        {
-            byte[] stateKeyBytes = RocksDBStoreBitConverter.GetBytes(stateKey);
-            byte[] blockIndexBytes = RocksDBStoreBitConverter.GetBytes(blockIndex);
-
-            return StateRefKeyPrefix
-                .Concat(stateKeyBytes)
-                .Concat(blockIndexBytes)
-                .ToArray();
-        }
-
         private IEnumerable<Iterator> IterateDb(RocksDb db, byte[] prefix, Guid? chainId = null)
         {
             ColumnFamilyHandle cf = GetColumnFamily(db, chainId);
@@ -974,28 +998,6 @@ namespace Libplanet.RocksDBStore
             {
                 yield return it;
             }
-        }
-
-        private ColumnFamilyHandle GetColumnFamily(RocksDb db, Guid? chainId = null)
-        {
-            if (chainId is null)
-            {
-                return null;
-            }
-
-            var cfName = chainId.ToString();
-
-            ColumnFamilyHandle cf;
-            try
-            {
-                cf = db.GetColumnFamily(cfName);
-            }
-            catch (KeyNotFoundException)
-            {
-                cf = db.CreateColumnFamily(_options, cfName);
-            }
-
-            return cf;
         }
 
         private ColumnFamilies GetColumnFamilies(DbOptions options, string dbName)

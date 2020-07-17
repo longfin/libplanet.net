@@ -1945,6 +1945,44 @@ namespace Libplanet.Tests.Blockchain
             Assert.Equal((Text)$"{miner0},{miner1},{miner1},{miner2}", rewardState);
         }
 
+        [Fact]
+        public async Task IncorrectStateRefAfterReorg()
+        {
+            var chainA = new BlockChain<SelectiveNextState>(
+                new BlockPolicy<SelectiveNextState>(),
+                new DefaultStore(null),
+                TestUtils.MineGenesis<SelectiveNextState>()
+            );
+            var chainB = chainA.Fork(chainA.Genesis.Hash);
+            var minerA = _fx.Address1;
+            var minerB = _fx.Address2;
+
+            var idA = chainA.Id;
+            var idB = chainB.Id;
+
+            var pk = new PrivateKey();
+            var tx = chainA.MakeTransaction(
+                pk,
+                new[] { new SelectiveNextState() { SelectedMiner = minerA } },
+                updatedAddresses: new[] { minerA, pk.ToAddress() }.ToImmutableHashSet()
+            );
+            await chainA.MineBlock(minerA);
+
+            // chainA and chainB are using same store, so `chainB.StageTransaction()` doesn't work.
+            chainB.Store.StageTransactionIds(new[] { tx.Id }.ToImmutableHashSet());
+            await chainB.MineBlock(minerB);
+
+            var fromABeforeSwap = chainA.GetState(tx.Signer);
+            var fromBBeforeSwap = chainB.GetState(tx.Signer);
+
+            chainA.Swap(chainB, true);
+
+            var fromAAfterSwap = chainA.GetState(tx.Signer);
+            var fromBAfterSwap = chainB.GetState(tx.Signer);
+
+            Assert.False(true);
+        }
+
         /// <summary>
         /// Builds a fixture that has incomplete states for blocks other
         /// than the tip, to test <c>GetState()</c> method's

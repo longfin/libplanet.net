@@ -165,8 +165,11 @@ namespace Libplanet.Blockchain.Renderers
         /// <inheritdoc cref="IRenderer{T}.RenderBlock(Block{T}, Block{T})"/>
         public virtual void RenderBlock(Block<T> oldTip, Block<T> newTip)
         {
-            _confirmed.TryAdd(oldTip.Hash, 0);
-            DiscoverBlock(newTip);
+            if (oldTip != newTip)
+            {
+                _confirmed.TryAdd(oldTip.Hash, 0);
+                DiscoverBlock(newTip);
+            }
         }
 
         /// <inheritdoc cref="IRenderer{T}.RenderReorg(Block{T}, Block{T}, Block{T})"/>

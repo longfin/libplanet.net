@@ -172,7 +172,7 @@ namespace Libplanet.Blockchain.Renderers
             {
                 throw new ArgumentException(
                     $"The {nameof(upper)} block (#{upper.Index} {upper}) must has the greater " +
-                    $"index than the {nameof(lower)} block (#{lower.Index} {lower}).",
+                    $"index than the {nameof(lower)} block (#{lower.Index} {lower})...",
                     nameof(upper)
                 );
             }
@@ -201,7 +201,7 @@ namespace Libplanet.Blockchain.Renderers
             }
 
             Block<T>? branchpoint = base.OnTipChanged(oldTip, newTip);
-            if (branchpoint is null)
+            if (branchpoint is null || branchpoint == newTip || branchpoint == oldTip)
             {
                 RenderBufferedActionEvaluations(newTip.Hash, unrender: false);
             }

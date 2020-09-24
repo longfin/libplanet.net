@@ -913,7 +913,7 @@ namespace Libplanet.Blockchain
                     {
                         evaluations = ExecuteActions(block);
 
-                        // FIXME we should refactoring ValidateNextBlock() to avoid affecting
+                        // FIXME we should refactor ValidateNextBlock() to avoid affecting
                         // the global state, then integrate with ThrowIfStateRootHashInvalid().
                         ThrowIfStateRootHashInvalid(block);
                     }

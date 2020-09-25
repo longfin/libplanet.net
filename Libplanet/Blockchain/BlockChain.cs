@@ -755,7 +755,7 @@ namespace Libplanet.Blockchain
             if (StateStore is TrieStateStore trieStateStore)
             {
                 SetStates(block, actionEvaluations, false);
-                block = new Block<T>(block, trieStateStore.GetRootHash(block.Hash));
+                block = new Block<T>(block, trieStateStore.GetRootHash(block.PreEvaluationHash));
             }
 
             if (append)
@@ -1750,7 +1750,7 @@ namespace Libplanet.Blockchain
             if (StateStore is TrieStateStore trieStateStore)
             {
                 HashDigest<SHA256> rootHash =
-                    trieStateStore.GetRootHash(block.Hash);
+                    trieStateStore.GetRootHash(block.PreEvaluationHash);
 
                 if (!rootHash.Equals(block.StateRootHash))
                 {

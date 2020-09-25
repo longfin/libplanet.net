@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 using Libplanet.Action;
 using Libplanet.Blockchain;
 using Libplanet.Store;
@@ -46,16 +47,16 @@ namespace Libplanet.RocksDBStore.Tests
 
 #pragma warning disable MEN002 // Line is too long
         [Fact]
-        public void D()
+        public async Task D()
         {
-            var path = @"C:\Users\X1E\Downloads\9c-beta-7-rc9-2";
+            var path = @"C:\Users\X1E\Downloads\9c-beta-7-rc10";
             var store = new RocksDBStore(path);
             var stateStore = new TrieStateStore(
                 new RocksDBKeyValueStore(Path.Join(path, "states")),
                 new RocksDBKeyValueStore(Path.Join(path, "state_hashes"))
             );
             var genesis = store.GetBlock<PolymorphicAction<ActionBase>>(
-                new HashDigest<SHA256>(ByteUtil.ParseHex("147ffb3a120e82c5bd21e909b6dc872c9abe510c800f8f59880d538745a39d02"))
+                new HashDigest<SHA256>(ByteUtil.ParseHex("7aaf7d1908a257a2c05745477665a0aedecd9dc400f86b5686b15f13e21d167c"))
             );
             var bc = new BlockChain<PolymorphicAction<ActionBase>>(
                 new BlockPolicySource(Logger.None).GetPolicy(5000000),
@@ -72,8 +73,7 @@ namespace Libplanet.RocksDBStore.Tests
                 ),
                 genesis
             );
-            var villain = bc[3895];
-            newBc.Append(villain);
+            await bc.MineBlock(default);
 
             Assert.True(true);
         }

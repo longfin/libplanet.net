@@ -1,6 +1,4 @@
-<Project
-    xmlns="http://schemas.microsoft.com/developer/msbuild/2003"
-    Sdk="Microsoft.NET.Sdk">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" Sdk="Microsoft.NET.Sdk">
 <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <IsPackable>false</IsPackable>
@@ -18,13 +16,11 @@
     <AdditionalFiles Include="..\stylecop.json" />
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(MSBuildRuntimeType)'!='Mono' And
-                             '$(MSBuildVersion)'&gt;='16.3.0'">
+  <PropertyGroup Condition=" '$(MSBuildRuntimeType)'!='Mono' And&#xD;&#xA;                             '$(MSBuildVersion)'&gt;='16.3.0'">
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(MSBuildRuntimeType)'=='Mono' And
-                             '$(BuildingByReSharper)'!='true'">
+  <PropertyGroup Condition=" '$(MSBuildRuntimeType)'=='Mono' And&#xD;&#xA;                             '$(BuildingByReSharper)'!='true'">
     <TargetFramework>net47</TargetFramework>
   </PropertyGroup>
 
@@ -67,6 +63,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\electron-launcher\NineChronicles.Standalone\Lib9c\Lib9c\Lib9c.csproj" />
     <ProjectReference Include="..\Libplanet.RocksDBStore\Libplanet.RocksDBStore.csproj" />
     <ProjectReference Include="..\Libplanet.Tests\Libplanet.Tests.csproj" />
   </ItemGroup>

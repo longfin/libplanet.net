@@ -1765,6 +1765,28 @@ namespace Libplanet.Blockchain
             }
         }
 
+        private string Serialize(IAccountStateDelta delta)
+        {
+            var codec = new Codec();
+            var sd = default(Dictionary);
+            var ad = default(Dictionary);
+
+            foreach (var addr in delta.StateUpdatedAddresses)
+            {
+                sd = sd.Add(addr.ToHex(), delta.GetState(addr));
+            }
+
+            foreach (var pair in delta.UpdatedFungibleAssets)
+            {
+                ad = ad.Add(
+                    pair.Key.ToHex(),
+                    delta.GetBalance(pair.Key, pair.Value.First()).GetQuantityString()
+                );
+            }
+
+            return ByteUtil.Hex(new Codec().Encode(new List(new IValue[] { sd, ad })));
+        }
+
         private IValue GetRawState(
             string key,
             HashDigest<SHA256>? offset,

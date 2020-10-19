@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Libplanet.Stun", "Libplanet.Stun\Libplanet.Stun.csproj", "{4F5DB8F5-D0F4-454C-95A7-87F53E5D5E36}"
 EndProject
@@ -22,6 +22,7 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Libplanet.Analyzers", "Libplanet.Analyzers\Libplanet.Analyzers.csproj", "{5CEE1B93-3936-4E32-A414-522DCDCA26BB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Libplanet.Analyzers.Tests", "Libplanet.Analyzers.Tests\Libplanet.Analyzers.Tests.csproj", "{B48782B9-6FA9-4D18-8564-1849FF4CF40E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lib9c", "..\electron-launcher\NineChronicles.Standalone\Lib9c\Lib9c\Lib9c.csproj", "{F9E2FB5E-8C0F-4162-9C7F-DA892C202A17}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -153,6 +154,18 @@ Global
 		{B48782B9-6FA9-4D18-8564-1849FF4CF40E}.Release|x64.Build.0 = Release|Any CPU
 		{B48782B9-6FA9-4D18-8564-1849FF4CF40E}.Release|x86.ActiveCfg = Release|Any CPU
 		{B48782B9-6FA9-4D18-8564-1849FF4CF40E}.Release|x86.Build.0 = Release|Any CPU
+		{F9E2FB5E-8C0F-4162-9C7F-DA892C202A17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9E2FB5E-8C0F-4162-9C7F-DA892C202A17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9E2FB5E-8C0F-4162-9C7F-DA892C202A17}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F9E2FB5E-8C0F-4162-9C7F-DA892C202A17}.Debug|x64.Build.0 = Debug|Any CPU
+		{F9E2FB5E-8C0F-4162-9C7F-DA892C202A17}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F9E2FB5E-8C0F-4162-9C7F-DA892C202A17}.Debug|x86.Build.0 = Debug|Any CPU
+		{F9E2FB5E-8C0F-4162-9C7F-DA892C202A17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9E2FB5E-8C0F-4162-9C7F-DA892C202A17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9E2FB5E-8C0F-4162-9C7F-DA892C202A17}.Release|x64.ActiveCfg = Release|Any CPU
+		{F9E2FB5E-8C0F-4162-9C7F-DA892C202A17}.Release|x64.Build.0 = Release|Any CPU
+		{F9E2FB5E-8C0F-4162-9C7F-DA892C202A17}.Release|x86.ActiveCfg = Release|Any CPU
+		{F9E2FB5E-8C0F-4162-9C7F-DA892C202A17}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

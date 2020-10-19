@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Bencodex.Types;
@@ -61,6 +62,10 @@ namespace Libplanet.Store
             {
                 prevStatesTrie = prevStatesTrie.Set(Encoding.UTF8.GetBytes(pair.Key), pair.Value);
             }
+
+            var bdict = new Bencodex.Types.Dictionary(
+                states.Select(pair => new KeyValuePair<IKey, IValue>((Text)pair.Key, pair.Value)
+            ));
 
             var newStateTrie = prevStatesTrie.Commit();
             _stateHashKeyValueStore.Set(

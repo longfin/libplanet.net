@@ -226,21 +226,30 @@ namespace Libplanet.Net
 
             _logger.Information($"Listen on {_listenPort}");
 
-            if (_host is null && !(_iceServers is null))
+            if (!(_iceServers is null))
             {
                 _turnClient = await IceServer.CreateTurnClient(_iceServers);
                 await _turnClient.StartAsync(_listenPort.Value, _cancellationToken);
 
                 _refreshPermissions = RefreshPermissions(_cancellationToken);
             }
+            else
+            {
+                _logger.Debug($"_host: {_host}, _iceServers: {_iceServers}");
+            }
 
             _cancellationToken = cancellationToken;
 
-            if (_turnClient is null || !_turnClient.BehindNAT)
+            if (_turnClient is null)
             {
+                _logger.Information("There is no TURN server information");
                 _hostEndPoint = new DnsEndPoint(
                     _host ?? PublicIPAddress.ToString(),
                     _listenPort.Value);
+            }
+            else if (!_turnClient.BehindNAT)
+            {
+                _logger.Information("It doesn't seem to behind NAT, but I'll use TURN relay.");
             }
 
             _replyQueue = new NetMQQueue<NetMQMessage>();

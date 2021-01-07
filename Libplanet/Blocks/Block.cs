@@ -612,6 +612,16 @@ namespace Libplanet.Blocks
         internal void Validate(DateTimeOffset currentTime)
         {
             Header.Validate(currentTime);
+            HashDigest<SHA256> calculatedPreEvalHash =
+                Hashcash.Hash(SerializeForHash());
+            if (!calculatedPreEvalHash.Equals(PreEvaluationHash))
+            {
+                throw new InvalidBlockPreEvaluationHashException(
+                    $"Block #{Index} {Hash}'s PreEvaluationHash doesn't match its content.",
+                    PreEvaluationHash,
+                    calculatedPreEvalHash
+                );
+            }
 
             HashDigest<SHA256>? calculatedTxHash =
                 CalcualteTxHashes(Transactions.OrderBy(tx => tx.Id));

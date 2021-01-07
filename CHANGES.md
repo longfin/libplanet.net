@@ -71,6 +71,7 @@ To be released.
  -  Added `Libplanet.Blockchain.Renderers.Debug.InvalidRenderException<T>`
     class.  [[#1119]]
  -  Added `InvalidBlockTxHashException` class.  [[#1116]]
+ -  Added `InvalidBlockPreEvaluationHashException` class.  [[#TBD]]
  -  Removed `Swarm<T>.TraceTable()` method.  [[#1120]]
  -  Added `Swarm<T>.PeerStates` property.  [[#1120]]
  -  Added `IProtocol` interface.  [[#1120]]
@@ -103,6 +104,8 @@ To be released.
 
  -  Fixed a bug where `BlockChain<T>.MineBlock()` was not automatically
     cancelled when the tip of the chain was changed occasionally.  [[#1141]]
+ -  Fixed a bug where `Block<T>.Validate()` had not validate its
+    pre-evaluation hash.  [[#TBD]]
 
 ### CLI tools
 

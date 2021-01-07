@@ -314,24 +314,16 @@ namespace Libplanet.Tx
         /// representation of a <see cref="Transaction{T}"/>.</param>
         /// <returns>A decoded <see cref="Transaction{T}"/> object.</returns>
         /// <seealso cref="Serialize(bool)"/>
+        /// <exception cref="InvalidTxSignatureException">Thrown when its
+        /// <see cref="Transaction{T}.Signature"/> is invalid or not signed by
+        /// the account who corresponds to its <see cref="PublicKey"/>.
+        /// </exception>
+        /// <exception cref="InvalidTxPublicKeyException">Thrown when its
+        /// <see cref="Signer"/> is not derived from its
+        /// <see cref="Transaction{T}.PublicKey"/>.</exception>
         public static Transaction<T> Deserialize(byte[] bytes)
         {
-            IValue value = new Codec().Decode(bytes);
-            if (!(value is Bencodex.Types.Dictionary dict))
-            {
-                throw new DecodingException(
-                    $"Expected {typeof(Bencodex.Types.Dictionary)} but " +
-                    $"{value.GetType()}");
-            }
-
-            var tx = new Transaction<T>(dict);
-            if (bytes.Length < BytesCacheThreshold)
-            {
-                tx._bytes = bytes;
-            }
-
-            tx._bytesLength = bytes.Length;
-            return tx;
+            return Deserialize(bytes, true);
         }
 
         /// <summary>
@@ -507,6 +499,32 @@ namespace Libplanet.Tx
                 actionsArray,
                 sig
             );
+        }
+
+        internal static Transaction<T> Deserialize(byte[] bytes, bool validate)
+        {
+            IValue value = new Codec().Decode(bytes);
+            if (!(value is Bencodex.Types.Dictionary dict))
+            {
+                throw new DecodingException(
+                    $"Expected {typeof(Bencodex.Types.Dictionary)} but " +
+                    $"{value.GetType()}");
+            }
+
+            var tx = new Transaction<T>(dict);
+            if (bytes.Length < BytesCacheThreshold)
+            {
+                tx._bytes = bytes;
+            }
+
+            tx._bytesLength = bytes.Length;
+
+            if (validate)
+            {
+                tx.Validate();
+            }
+
+            return tx;
         }
 
         /// <summary>

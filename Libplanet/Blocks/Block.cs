@@ -680,18 +680,5 @@ namespace Libplanet.Blocks
 
             return new Codec().Encode(dict);
         }
-
-        private readonly struct BlockSerializationContext
-        {
-            public BlockSerializationContext(bool hash, bool transactionData)
-            {
-                IncludeHash = hash;
-                IncludeTransactionData = transactionData;
-            }
-
-            internal bool IncludeHash { get; }
-
-            internal bool IncludeTransactionData { get; }
-        }
     }
 }

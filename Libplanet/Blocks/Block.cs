@@ -122,7 +122,7 @@ namespace Libplanet.Blocks
         /// representation of <see cref="Block{T}"/> instance.
         /// </param>
         public Block(Bencodex.Types.Dictionary dict)
-            : this(new RawBlock(dict))
+            : this(new RawBlock(dict), true)
         {
         }
 
@@ -143,7 +143,7 @@ namespace Libplanet.Blocks
         {
         }
 
-        private Block(RawBlock rb)
+        private Block(RawBlock rb, bool validateTxs)
             : this(
                 new HashDigest<SHA256>(rb.Header.Hash),
                 rb.Header.Index,
@@ -162,7 +162,7 @@ namespace Libplanet.Blocks
                 rb.Header.TxHash.Any() ? new HashDigest<SHA256>(rb.Header.TxHash) : (HashDigest<SHA256>?)null,
 #pragma warning restore MEN002 // Line is too long
                 rb.Transactions
-                    .Select(tx => Transaction<T>.Deserialize(tx.ToArray()))
+                    .Select(tx => Transaction<T>.Deserialize(tx.ToArray(), validateTxs))
                     .ToList(),
 #pragma warning disable MEN002 // Line is too long
                 rb.Header.PreEvaluationHash.Any() ? new HashDigest<SHA256>(rb.Header.PreEvaluationHash) : (HashDigest<SHA256>?)null,
@@ -398,10 +398,11 @@ namespace Libplanet.Blocks
         /// </summary>
         /// <param name="bytes">A <a href="https://bencodex.org/">Bencodex</a>
         /// representation of a <see cref="Block{T}"/>.</param>
+        /// <param name="validate">Whether to validate deserialized block.</param>
         /// <returns>A decoded <see cref="Block{T}"/> object.</returns>
         /// <seealso cref="Serialize()"/>
         [Pure]
-        public static Block<T> Deserialize(byte[] bytes)
+        public static Block<T> Deserialize(byte[] bytes, bool validate = true)
         {
             IValue value = new Codec().Decode(bytes);
             if (!(value is Bencodex.Types.Dictionary dict))
@@ -411,8 +412,16 @@ namespace Libplanet.Blocks
                     $"{value.GetType()}");
             }
 
-            var block = new Block<T>(dict);
-            block._bytesLength = bytes.Length;
+            var block = new Block<T>(new RawBlock(dict), validate)
+            {
+                _bytesLength = bytes.Length,
+            };
+
+            if (validate)
+            {
+                block.Validate(DateTime.UtcNow);
+            }
+
             return block;
         }
 

@@ -312,6 +312,7 @@ namespace Libplanet.Tx
         /// </summary>
         /// <param name="bytes">A <a href="https://bencodex.org/">Bencodex</a>
         /// representation of a <see cref="Transaction{T}"/>.</param>
+        /// <param name="validate">Whether to validate deserialized transaction.</param>
         /// <returns>A decoded <see cref="Transaction{T}"/> object.</returns>
         /// <seealso cref="Serialize(bool)"/>
         /// <exception cref="InvalidTxSignatureException">Thrown when its
@@ -321,9 +322,30 @@ namespace Libplanet.Tx
         /// <exception cref="InvalidTxPublicKeyException">Thrown when its
         /// <see cref="Signer"/> is not derived from its
         /// <see cref="Transaction{T}.PublicKey"/>.</exception>
-        public static Transaction<T> Deserialize(byte[] bytes)
+        public static Transaction<T> Deserialize(byte[] bytes, bool validate = true)
         {
-            return Deserialize(bytes, true);
+            IValue value = new Codec().Decode(bytes);
+            if (!(value is Bencodex.Types.Dictionary dict))
+            {
+                throw new DecodingException(
+                    $"Expected {typeof(Bencodex.Types.Dictionary)} but " +
+                    $"{value.GetType()}");
+            }
+
+            var tx = new Transaction<T>(dict);
+            if (bytes.Length < BytesCacheThreshold)
+            {
+                tx._bytes = bytes;
+            }
+
+            tx._bytesLength = bytes.Length;
+
+            if (validate)
+            {
+                tx.Validate();
+            }
+
+            return tx;
         }
 
         /// <summary>
@@ -499,32 +521,6 @@ namespace Libplanet.Tx
                 actionsArray,
                 sig
             );
-        }
-
-        internal static Transaction<T> Deserialize(byte[] bytes, bool validate)
-        {
-            IValue value = new Codec().Decode(bytes);
-            if (!(value is Bencodex.Types.Dictionary dict))
-            {
-                throw new DecodingException(
-                    $"Expected {typeof(Bencodex.Types.Dictionary)} but " +
-                    $"{value.GetType()}");
-            }
-
-            var tx = new Transaction<T>(dict);
-            if (bytes.Length < BytesCacheThreshold)
-            {
-                tx._bytes = bytes;
-            }
-
-            tx._bytesLength = bytes.Length;
-
-            if (validate)
-            {
-                tx.Validate();
-            }
-
-            return tx;
         }
 
         /// <summary>

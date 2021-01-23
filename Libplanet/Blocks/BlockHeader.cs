@@ -360,7 +360,6 @@ namespace Libplanet.Blocks
 
             HashDigest<SHA256> calculatedHash = Hashcash.Hash(
                 SerializeForHash(
-                    ProtocolVersion,
                     Index,
                     Timestamp,
                     Difficulty,

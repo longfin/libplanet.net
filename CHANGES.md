@@ -188,6 +188,17 @@ To be released.
 [#1168]: https://github.com/planetarium/libplanet/pull/1168
 
 
+Version 0.10.3
+--------------
+
+Released on January 28, 2021.
+
+-  `BlockChain<T>.MineBlock()` became to unstage transactions that have lower
+   nonce than exepcted.  [[#1174]]
+
+[#1174]: https://github.com/planetarium/libplanet/pull/1174
+
+
 Version 0.10.2
 --------------
 

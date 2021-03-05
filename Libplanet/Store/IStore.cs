@@ -244,5 +244,16 @@ namespace Libplanet.Store
         long CountTransactions();
 
         long CountBlocks();
+
+        /// <summary>
+        /// Forks transaction nonces from
+        /// <paramref name="sourceChainId"/> to
+        /// <paramref name="destinationChainId"/>.
+        /// </summary>
+        /// <param name="sourceChainId">The chain ID of transaction nonces to
+        /// fork.</param>
+        /// <param name="destinationChainId">The chain ID of destination
+        /// transaction nonces.</param>
+        void ForkTxNonces(Guid sourceChainId, Guid destinationChainId);
     }
 }

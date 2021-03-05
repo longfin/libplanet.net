@@ -271,15 +271,28 @@ namespace Libplanet.RocksDBStore
                 return;
             }
 
-            foreach (HashDigest<SHA256> hash in IterateIndexes(sourceChainId, 1, null))
+            ColumnFamilyHandle cf = GetColumnFamily(_chainDb, destinationChainId);
+            using var writeBatch = new WriteBatch();
+            long index = 0;
+            foreach (HashDigest<SHA256> hash in IterateIndexes(sourceChainId, 0, null))
             {
-                AppendIndex(destinationChainId, hash);
+                byte[] indexBytes = RocksDBStoreBitConverter.GetBytes(index);
+                byte[] key = IndexKeyPrefix.Concat(indexBytes).ToArray();
+                writeBatch.Put(key, hash.ToByteArray(), cf);
+                index += 1;
 
                 if (hash.Equals(branchPoint))
                 {
                     break;
                 }
             }
+
+            writeBatch.Put(
+                IndexCountKey,
+                RocksDBStoreBitConverter.GetBytes(writeBatch.Count()),
+                cf
+            );
+            _chainDb.Write(writeBatch);
         }
 
         /// <inheritdoc/>
@@ -574,6 +587,20 @@ namespace Libplanet.RocksDBStore
             _blockDb?.Dispose();
             _blockPerceptionDb?.Dispose();
             _stagedTxDb?.Dispose();
+        }
+
+        /// <inheritdoc/>
+        public override void ForkTxNonces(Guid sourceChainId, Guid destinationChainId)
+        {
+            byte[] prefix = TxNonceKeyPrefix;
+            ColumnFamilyHandle cf = GetColumnFamily(_chainDb, destinationChainId);
+            using var writeBatch = new WriteBatch();
+            foreach (Iterator it in IterateDb(_chainDb, prefix, sourceChainId))
+            {
+                writeBatch.Put(it.Key(), it.Value(), cf);
+            }
+
+            _chainDb.Write(writeBatch);
         }
 
         private byte[] BlockKey(HashDigest<SHA256> blockHash)

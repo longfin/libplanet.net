@@ -31,7 +31,7 @@ namespace Libplanet
         /// values.</returns>
         /// <seealso cref="Hashcash.Answer(Stamp, long, CancellationToken)"/>
         /// <seealso cref="Nonce"/>
-        public delegate byte[] Stamp(Nonce nonce);
+        public delegate byte[] Stamp(byte[] nonce);
 
         /// <summary>
         /// Finds a <see cref="Nonce"/> that satisfies the given
@@ -56,18 +56,29 @@ namespace Libplanet
             Stamp stamp,
             long difficulty,
             CancellationToken cancellationToken = default(CancellationToken))
+            => Answer(stamp, difficulty, 0, cancellationToken);
+
+        public static Nonce Answer(
+            Stamp stamp,
+            long difficulty,
+            int seed,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             var nonceBytes = new byte[10];
-            var random = new Random();
+            var random = new Random(seed);
+            var c = 0;
+            var sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
             while (!cancellationToken.IsCancellationRequested)
             {
+                c += 1;
                 random.NextBytes(nonceBytes);
-                var nonce = new Nonce(nonceBytes);
-                var digest = Hash(stamp(nonce));
+                var digest = Hash(stamp(nonceBytes));
 
                 if (digest.Satisfies(difficulty))
                 {
-                    return nonce;
+                    sw.Stop();
+                    return new Nonce(nonceBytes);
                 }
             }
 

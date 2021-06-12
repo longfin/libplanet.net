@@ -8,6 +8,7 @@ using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Bencodex;
 using Bencodex.Types;
 using Libplanet.Action;
@@ -401,10 +402,10 @@ namespace Libplanet.Blocks
             byte[] stampSuffix = new byte[emptyNonce.Length - offset - nonceLength];
             Array.Copy(emptyNonce, offset + nonceLength, stampSuffix, 0, stampSuffix.Length);
 
-            Nonce nonce = Hashcash.Answer(
+            Task<Nonce> Answer(int seed, CancellationToken ct) => Task.Run(() => Hashcash.Answer(
                 n =>
                 {
-                    int nLen = n.ByteArray.Length;
+                    int nLen = n.Length;
                     byte[] nLenStr = Encoding.ASCII.GetBytes(
                         nLen.ToString(CultureInfo.InvariantCulture));
                     int totalLen =
@@ -416,16 +417,29 @@ namespace Libplanet.Blocks
                     pos += nLenStr.Length;
                     stamp[pos] = 0x3a;  // ':'
                     pos++;
-                    n.ByteArray.CopyTo(stamp, pos);
+                    n.CopyTo(stamp, pos);
                     pos += nLen;
                     Array.Copy(stampSuffix, 0, stamp, pos, stampSuffix.Length);
                     return stamp;
                 },
                 difficulty,
-                cancellationToken
-            );
+                seed,
+                ct
+            ));
 
-            return MakeBlock(nonce);
+            using var cts = new CancellationTokenSource();
+            var token = cts.Token;
+            using var lts =
+                CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, token);
+            var tasks = Enumerable.Range(0, 1).Select(i => Answer(i * 1024, lts.Token)).ToList();
+            var sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+            var n = Task.WhenAny(tasks).Result.Result;
+            sw.Stop();
+            cts.Cancel();
+            Serilog.Log.Debug("Found nonce at {elapsed}. {difficulty}", sw.Elapsed, difficulty);
+
+            return MakeBlock(n);
         }
 
         /// <summary>

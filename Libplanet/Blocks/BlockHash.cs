@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Numerics;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
@@ -115,7 +116,7 @@ namespace Libplanet.Blocks
             BigInteger target = maxTarget / difficulty;
 
             // Add zero to convert unsigned BigInteger
-            var result = new BigInteger(_byteArray.Add(0).ToBuilder().ToArray());
+            var result = new BigInteger(_byteArray.Add(0).ToArray());
 
             return result < target;
         }

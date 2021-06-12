@@ -14,9 +14,9 @@ namespace Libplanet.Tests
         [ClassData(typeof(HashcashTestData))]
         public void AnswerSatisfiesDifficulty(byte[] challenge, long difficulty)
         {
-            byte[] Stamp(Nonce nonce) => challenge.Concat(nonce.ToByteArray()).ToArray();
+            byte[] Stamp(byte[] nonce) => challenge.Concat(nonce).ToArray();
             var answer = Hashcash.Answer(Stamp, difficulty);
-            var digest = Hashcash.Hash(Stamp(answer));
+            var digest = Hashcash.Hash(Stamp(answer.ToByteArray()));
             Assert.True(digest.Satisfies(difficulty));
         }
 

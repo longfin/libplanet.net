@@ -211,7 +211,6 @@ namespace Libplanet.Net
 
             IStagePolicy<T> stagePolicy = BlockChain.StagePolicy;
             ImmutableHashSet<TxId> newTxIds = message.Ids
-                .Where(id => !_demandTxIds.ContainsKey(id))
                 .Where(id => !stagePolicy.Ignores(BlockChain, id))
                 .ToImmutableHashSet();
 
@@ -227,7 +226,8 @@ namespace Libplanet.Net
             );
             foreach (TxId txid in newTxIds)
             {
-                _demandTxIds.TryAdd(txid, peer);
+                HashSet<BoundPeer> peers = _demandTxIds.GetOrAdd(txid, new HashSet<BoundPeer>());
+                peers.Add(peer);
             }
         }
 

@@ -38,7 +38,7 @@ namespace Libplanet.Net
 
         private CancellationTokenSource _workerCancellationTokenSource;
         private CancellationToken _cancellationToken;
-        private ConcurrentDictionary<TxId, BoundPeer> _demandTxIds;
+        private ConcurrentDictionary<TxId, HashSet<BoundPeer>> _demandTxIds;
 
         private bool _disposed;
 
@@ -340,7 +340,7 @@ namespace Libplanet.Net
                     _workerCancellationTokenSource.Token, cancellationToken
                 ).Token;
             BlockDemand = null;
-            _demandTxIds = new ConcurrentDictionary<TxId, BoundPeer>();
+            _demandTxIds = new ConcurrentDictionary<TxId, HashSet<BoundPeer>>();
             try
             {
                 await Transport.StartAsync(_cancellationToken);
@@ -1569,14 +1569,17 @@ namespace Libplanet.Net
                 var demandTxIds = _demandTxIds.ToArray();
                 var demands = new Dictionary<BoundPeer, HashSet<TxId>>();
 
-                foreach (KeyValuePair<TxId, BoundPeer> kv in demandTxIds)
+                foreach (KeyValuePair<TxId, HashSet<BoundPeer>> kv in demandTxIds)
                 {
-                    if (!demands.ContainsKey(kv.Value))
+                    foreach (BoundPeer peer in kv.Value)
                     {
-                        demands[kv.Value] = new HashSet<TxId>();
-                    }
+                        if (!demands.ContainsKey(peer))
+                        {
+                            demands[peer] = new HashSet<TxId>();
+                        }
 
-                    demands[kv.Value].Add(kv.Key);
+                        demands[peer].Add(kv.Key);
+                    }
                 }
 
                 var txs = new HashSet<Transaction<T>>();
@@ -1655,7 +1658,7 @@ namespace Libplanet.Net
 
                 foreach (var kv in demandTxIds)
                 {
-                    _demandTxIds.TryRemove(kv.Key, out BoundPeer value);
+                    _demandTxIds.TryRemove(kv.Key, out HashSet<BoundPeer> _);
                 }
             }
         }
